@@ -37,9 +37,20 @@ import java.util.stream.Collectors;
 
 public class RepairItemListener implements Listener {
 
-    private final Map<String, RepairKit> repairKits;
+    // Singleton pattern (kindof)
+    private static RepairItemListener INSTANCE = null;
 
-    public RepairItemListener() {
+    public static RepairItemListener getInstance() {
+        if (INSTANCE == null)
+            INSTANCE = new RepairItemListener();
+        return INSTANCE;
+    }
+    // end of singleton pattern
+
+
+    public final Map<String, RepairKit> repairKits;
+
+    private RepairItemListener() {
         File repairKitFolder = new File(WeaponMechanics.getPlugin().getDataFolder(), "repair_kits");
         repairKits = new HashMap<>();
 
@@ -93,6 +104,8 @@ public class RepairItemListener implements Listener {
         } catch (Throwable e) {
             WeaponMechanics.debug.log(LogLevel.ERROR, "Some error occurred whilst reading repair_kits folder", e);
         }
+
+        WeaponMechanics.debug.info("Registered " + repairKits.size() + " RepairKits");
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -388,7 +401,7 @@ public class RepairItemListener implements Listener {
             ItemStack item = new ItemSerializer().serializeWithoutRecipe(data.move("Item"));
             CustomTag.DURABILITY.setInteger(item, totalDurability);
             CustomTag.REPAIR_KIT_TITLE.setString(item, repairKitTitle);
-            new ItemSerializer().serializeRecipe(data.move("Item.Recipe"), item);
+            new ItemSerializer().serializeRecipe(data.move("Item"), item);
 
             Mechanics breakMechanics = data.of("Break_Mechanics").serialize(Mechanics.class);
 

@@ -7,6 +7,7 @@ import me.deecaad.core.file.serializers.ChanceSerializer;
 import me.deecaad.core.utils.EnumUtil;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.damage.BlockDamageData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -27,7 +28,7 @@ public class BlockDamage implements Serializer<BlockDamage> {
     /**
      * Determines whether a block is broken, cracked, or skip damage.
      */
-    public enum BreakMode { CANCEL, BREAK, CRACK }
+    public enum BreakMode {CANCEL, BREAK, CRACK}
 
     /**
      * Holds data from config for a material.
@@ -140,6 +141,10 @@ public class BlockDamage implements Serializer<BlockDamage> {
         return config == null ? defaultMode : config.mode;
     }
 
+    public List<Block> filterBreakbleBlocks(List<Block> blocks) {
+        return blocks.stream().filter(block -> getBreakMode(block.getType()) == BreakMode.BREAK).toList();
+    }
+
     public int getDurability(Block block) {
         return getDurability(block.getType());
     }
@@ -223,41 +228,52 @@ public class BlockDamage implements Serializer<BlockDamage> {
      */
     @Nullable
     public BlockDamageData.DamageData damage(Block block, @Nullable Player player, boolean isRegenerate) {
-        if (getBreakMode(block) != BreakMode.CANCEL && !BlockDamageData.isBroken(block)) {
+        BreakMode blockBreakMode = getBreakMode(block);
+        if (blockBreakMode != BreakMode.CANCEL && !BlockDamageData.isBroken(block)) {
 
-            boolean dropItems = true;
+            boolean dropItems = blockBreakMode == BreakMode.BREAK;
+            Collection<ItemStack> drops = null;
 
-            // When you provide the player to this method, other plugins can
-            // cancel the block damage. This is used for protection plugins
-            // (other than world-edit, which is checked separately).
-            if (player != null) {
-                BlockBreakEvent breakEvent = new BlockBreakEvent(block, player) {
-                    @Override
-                    public @NotNull String getEventName() {
-                        return "WeaponMechanicsBlockDamage";
+            // Only use these if its BREAK, not CRACK
+            if (blockBreakMode == BreakMode.BREAK) {
+
+                // #307, people don't want protection plugins to interfere sometimes
+                boolean disableBlockBreakEvent = WeaponMechanics.getBasicConfigurations().getBool("Disable_Block_Break_Event");
+
+                // When you provide the player to this method, other plugins can
+                // cancel the block damage. This is used for protection plugins
+                // (other than world-edit, which is checked separately).
+                if (!disableBlockBreakEvent && player != null) {
+
+                    BlockBreakEvent breakEvent = new BlockBreakEvent(block, player) {
+                        @Override
+                        public @NotNull String getEventName() {
+                            return "WeaponMechanicsBlockDamage";
+                        }
+                    };
+                    Bukkit.getPluginManager().callEvent(breakEvent);
+
+                    if (breakEvent.isCancelled())
+                        return null;
+
+                    // Added in 1.12
+                    if (ReflectionUtil.getMCVersion() >= 12) {
+                        dropItems = breakEvent.isDropItems();
                     }
-                };
-                Bukkit.getPluginManager().callEvent(breakEvent);
-
-                if (breakEvent.isCancelled())
-                    return null;
-
-                // Added in 1.12
-                if (ReflectionUtil.getMCVersion() >= 12) {
-                    dropItems = breakEvent.isDropItems();
                 }
-            }
 
-            // Calculate dropped blocks BEFORE the block is broken.
-            Collection<ItemStack> drops = NumberUtil.chance(dropBlockChance) ? block.getDrops() : null;
-            if (block.getState() instanceof InventoryHolder inv && !isRegenerate) {
-                if (drops == null)
-                    drops = new ArrayList<>();
+                // Calculate dropped blocks BEFORE the block is broken.
+                drops = NumberUtil.chance(dropBlockChance) ? block.getDrops() : null;
+                if (block.getState() instanceof InventoryHolder inv && !isRegenerate) {
+                    if (drops == null)
+                        drops = new ArrayList<>();
 
-                if (inv instanceof Chest)
-                    Collections.addAll(drops, ((Chest) inv).getBlockInventory().getContents());
-                else
-                    Collections.addAll(drops, inv.getInventory().getContents());
+                    if (inv instanceof Chest)
+                        Collections.addAll(drops, ((Chest) inv).getBlockInventory().getContents());
+                    else
+                        Collections.addAll(drops, inv.getInventory().getContents());
+                }
+
             }
 
             int max = getDurability(block);

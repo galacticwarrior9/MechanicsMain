@@ -10,7 +10,6 @@ import me.deecaad.weaponmechanics.compatibility.WeaponCompatibilityAPI;
 import me.deecaad.weaponmechanics.utils.MetadataKey;
 import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
 import org.bukkit.Bukkit;
-import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
@@ -190,7 +189,7 @@ public class DamageUtil {
         }
 
         // Visual red flash
-        victim.playEffect(EntityEffect.HURT);
+        WeaponCompatibilityAPI.getWeaponCompatibility().playHurtAnimation(victim);
 
         // Spigot api things
         victim.setLastDamage(damage);
@@ -210,8 +209,13 @@ public class DamageUtil {
             if (damage >= 0.1) player.incrementStatistic(Statistic.DAMAGE_DEALT, Math.round((float) damage * 10));
             if (killed) {
                 if (isWhitelisted(victim.getType())) player.incrementStatistic(Statistic.KILL_ENTITY, victim.getType());
-                if (victim.getType() == EntityType.PLAYER) player.incrementStatistic(Statistic.PLAYER_KILLS);
-                else player.incrementStatistic(Statistic.MOB_KILLS);
+
+                // In newer versions (probably 1.13, but only confirmed in 1.18.2+),
+                // these statistics are automatically tracked.
+                if (ReflectionUtil.getMCVersion() < 13) {
+                    if (victim.getType() == EntityType.PLAYER) player.incrementStatistic(Statistic.PLAYER_KILLS);
+                    else player.incrementStatistic(Statistic.MOB_KILLS);
+                }
             }
         }
 
@@ -233,7 +237,6 @@ public class DamageUtil {
             case IRON_GOLEM, SNOWMAN, ENDER_DRAGON, WITHER, GIANT, PLAYER -> false;
             default -> ReflectionUtil.getMCVersion() != 12 || type != EntityType.ILLUSIONER;
         };
-
     }
     
     public static void damageArmor(LivingEntity victim, int amount) {

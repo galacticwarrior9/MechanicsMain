@@ -18,15 +18,6 @@ dependencies {
     implementation(project(":WeaponMechanics"))
     implementation(project(":WeaponCompatibility"))
 
-    implementation(project(":Weapon_1_12_R1"))
-    implementation(project(":Weapon_1_13_R2"))
-    implementation(project(":Weapon_1_14_R1"))
-    implementation(project(":Weapon_1_15_R1"))
-    implementation(project(":Weapon_1_16_R3"))
-    implementation(project(":Weapon_1_17_R1", "reobf"))
-    implementation(project(":Weapon_1_18_R2", "reobf"))
-    implementation(project(":Weapon_1_19_R1", "reobf"))
-    implementation(project(":Weapon_1_19_R2", "reobf"))
     implementation(project(":Weapon_1_19_R3", "reobf"))
 }
 
@@ -64,15 +55,6 @@ tasks.named<ShadowJar>("shadowJar") {
         include(project(":WeaponMechanics"))
         include(project(":WeaponCompatibility"))
 
-        include(project(":Weapon_1_12_R1"))
-        include(project(":Weapon_1_13_R2"))
-        include(project(":Weapon_1_14_R1"))
-        include(project(":Weapon_1_15_R1"))
-        include(project(":Weapon_1_16_R3"))
-        include(project(":Weapon_1_17_R1"))
-        include(project(":Weapon_1_18_R2"))
-        include(project(":Weapon_1_19_R1"))
-        include(project(":Weapon_1_19_R2"))
         include(project(":Weapon_1_19_R3"))
 
         relocate("me.cjcrafter.auto", "me.deecaad.weaponmechanics.lib.auto") {

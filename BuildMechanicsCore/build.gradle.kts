@@ -22,15 +22,6 @@ dependencies {
     implementation(project(":WorldGuardV7"))
     implementation(kotlin("stdlib-jdk8"))
 
-    implementation(project(":Core_1_12_R1"))
-    implementation(project(":Core_1_13_R2"))
-    implementation(project(":Core_1_14_R1"))
-    implementation(project(":Core_1_15_R1"))
-    implementation(project(":Core_1_16_R3"))
-    implementation(project(":Core_1_17_R1", "reobf"))
-    implementation(project(":Core_1_18_R2", "reobf"))
-    implementation(project(":Core_1_19_R1", "reobf"))
-    implementation(project(":Core_1_19_R2", "reobf"))
     implementation(project(":Core_1_19_R3", "reobf"))
 }
 
@@ -64,15 +55,6 @@ tasks.named<ShadowJar>("shadowJar") {
         include(project(":WorldGuardV6"))
         include(project(":WorldGuardV7"))
 
-        include(project(":Core_1_12_R1"))
-        include(project(":Core_1_13_R2"))
-        include(project(":Core_1_14_R1"))
-        include(project(":Core_1_15_R1"))
-        include(project(":Core_1_16_R3"))
-        include(project(":Core_1_17_R1"))
-        include(project(":Core_1_18_R2"))
-        include(project(":Core_1_19_R1"))
-        include(project(":Core_1_19_R2"))
         include(project(":Core_1_19_R3"))
 
         include(dependency("org.jetbrains.kotlin:"))

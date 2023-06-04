@@ -2,9 +2,6 @@ package me.deecaad.weaponmechanics;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import me.cjcrafter.auto.AutoMechanicsDownload;
-import me.cjcrafter.auto.UpdateChecker;
-import me.cjcrafter.auto.UpdateInfo;
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.commands.MainCommand;
 import me.deecaad.core.compatibility.CompatibilityAPI;
@@ -87,7 +84,6 @@ public class WeaponMechanics {
     Configuration basicConfiguration;
     MainCommand mainCommand;
     WeaponHandler weaponHandler;
-    UpdateChecker updateChecker;
     ProjectilesRunnable projectilesRunnable;
     ProtocolManager protocolManager;
     Metrics metrics;
@@ -259,17 +255,6 @@ public class WeaponMechanics {
                         int connection = basicConfiguration.getInt("Resource_Pack_Download.Connection_Timeout");
                         int read = basicConfiguration.getInt("Resource_Pack_Download.Read_Timeout");
 
-                        if (("https://raw.githubusercontent.com/WeaponMechanics/MechanicsMain/master/WeaponMechanicsResourcePack.zip").equals(link)) {
-                            try {
-                                AutoMechanicsDownload auto = new AutoMechanicsDownload(10000, 30000);
-                                String version = auto.RESOURCE_PACK_VERSION;
-                                link = "https://raw.githubusercontent.com/WeaponMechanics/MechanicsMain/master/resourcepack/WeaponMechanicsResourcePack-" + version + ".zip";
-                            } catch (InternalError e) {
-                                debug.log(LogLevel.DEBUG, "Failed to fetch resource pack version due to timeout", e);
-                                return null;
-                            }
-                        }
-
                         File pack = new File(getDataFolder(), "WeaponMechanicsResourcePack.zip");
                         if (!pack.exists()) {
                             FileUtil.downloadFile(pack, link, connection, read);
@@ -439,51 +424,7 @@ public class WeaponMechanics {
     }
 
     void registerUpdateChecker() {
-        if (!basicConfiguration.getBool("Update_Checker.Enable", true) || updateChecker != null) return;
 
-        debug.debug("Registering update checker");
-
-        updateChecker = new UpdateChecker(javaPlugin, UpdateChecker.spigot(99913, "WeaponMechanics"));
-
-        try {
-            UpdateInfo consoleUpdate = updateChecker.hasUpdate();
-            if (consoleUpdate != null) {
-                Audience audience = MechanicsCore.getPlugin().adventure.sender(Bukkit.getConsoleSender());
-                Component component = Component.text("WeaponMechanics is outdated! %s -> %s".formatted(consoleUpdate.current, consoleUpdate.newest), NamedTextColor.RED)
-                        .clickEvent(ClickEvent.openUrl("https://github.com/WeaponMechanics/MechanicsMain/releases/latest/download/WeaponMechanics.zip"))
-                        .hoverEvent(Component.text("Click to download", NamedTextColor.GRAY));
-
-                audience.sendMessage(component);
-            }
-        } catch (Throwable ex) {
-            debug.log(LogLevel.DEBUG, "UpdateChecker error", ex);
-            debug.error("UpdateChecker failed to connect: " + ex.getMessage());
-            return;
-        }
-
-        Listener listener = new Listener() {
-            @EventHandler
-            public void onJoin(PlayerJoinEvent event) {
-                if (event.getPlayer().isOp()) {
-                    new TaskChain(javaPlugin)
-                            .thenRunAsync((callback) -> updateChecker.hasUpdate())
-                            .thenRunSync((callback) -> {
-                                UpdateInfo update = (UpdateInfo) callback;
-                                if (callback != null) {
-                                    Audience audience = MechanicsCore.getPlugin().adventure.player(event.getPlayer());
-                                    Component component = Component.text("WeaponMechanics is outdated! %s -> %s".formatted(update.current, update.newest), NamedTextColor.RED)
-                                            .clickEvent(ClickEvent.openUrl("https://github.com/WeaponMechanics/MechanicsMain/releases/latest/download/WeaponMechanics.zip"))
-                                            .hoverEvent(Component.text("Click to download", NamedTextColor.GRAY));
-
-                                    audience.sendMessage(component);
-                                }
-                                return null;
-                            });
-                }
-            }
-        };
-
-        Bukkit.getPluginManager().registerEvents(listener, javaPlugin);
     }
 
     void registerBStats() {

@@ -57,10 +57,6 @@ tasks.named<ShadowJar>("shadowJar") {
 
         include(project(":Weapon_1_19_R3"))
 
-        relocate("me.cjcrafter.auto", "me.deecaad.weaponmechanics.lib.auto") {
-            include(dependency("me.cjcrafter:mechanicsautodownload"))
-        }
-
         relocate("org.bstats", "me.deecaad.weaponmechanics.lib.bstats") {
             include(dependency("org.bstats:"))
         }

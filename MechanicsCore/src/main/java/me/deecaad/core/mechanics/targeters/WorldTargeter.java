@@ -46,7 +46,7 @@ public class WorldTargeter extends Targeter {
 
         // Loop through every living entity in the world
         List<CastData> targets = new LinkedList<>();
-        for (LivingEntity target : worldCache.getLivingEntities()) {
+        for (LivingEntity target : worldCache.getPlayers()) {
             CastData copy = cast.clone();
             copy.setTargetEntity(target);
             targets.add(copy);

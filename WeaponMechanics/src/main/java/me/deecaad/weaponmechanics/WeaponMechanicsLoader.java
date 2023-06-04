@@ -1,6 +1,5 @@
 package me.deecaad.weaponmechanics;
 
-import me.cjcrafter.auto.AutoMechanicsDownload;
 import me.deecaad.core.MechanicsCore;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -22,8 +21,6 @@ public class WeaponMechanicsLoader extends JavaPlugin {
             try {
                 int connect = getConfig().getInt("Mechanics_Core_Download.Read_Timeout", 10) * 1000;
                 int read = getConfig().getInt("Mechanics_Core_Download.Connection_Timeout", 30) * 1000;
-                AutoMechanicsDownload downloader = new AutoMechanicsDownload(connect, read);
-                downloader.MECHANICS_CORE.install();
             } catch (Throwable e) {
                 getLogger().log(Level.WARNING, "Failed to use auto-installer", e);
             }

@@ -1,14 +1,13 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 description = "Library plugin for WeaponMechanics"
-version = "2.3.0"
+version = "2.4.1"
 
 plugins {
     `maven-publish`
     id("me.deecaad.java-conventions")
     id("com.github.johnrengelman.shadow") version "7.1.0"
     id("net.minecrell.plugin-yml.bukkit") version "0.5.1"
-    kotlin("jvm") version "1.7.20-RC"
 }
 
 configurations {
@@ -20,9 +19,9 @@ dependencies {
     implementation(project(":CoreCompatibility"))
     implementation(project(":WorldGuardV6"))
     implementation(project(":WorldGuardV7"))
-    implementation(kotlin("stdlib-jdk8"))
 
     implementation(project(":Core_1_19_R3", "reobf"))
+    implementation(project(":Core_1_20_R1", "reobf"))
 }
 
 tasks {
@@ -56,11 +55,7 @@ tasks.named<ShadowJar>("shadowJar") {
         include(project(":WorldGuardV7"))
 
         include(project(":Core_1_19_R3"))
-
-        include(dependency("org.jetbrains.kotlin:"))
-        //relocate ("kotlin.", "me.deecaad.core.lib.kotlin.") {
-        //    include(dependency("org.jetbrains.kotlin:"))
-        //}
+        include(project(":Core_1_20_R1"))
 
         relocate ("net.kyori", "me.deecaad.core.lib") {
             include(dependency("net.kyori::"))

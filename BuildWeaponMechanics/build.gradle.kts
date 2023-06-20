@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 description = "A New Age of Weapons in Minecraft"
-version = "2.3.0"
+version = "2.5.0"
 
 plugins {
     id("me.deecaad.java-conventions")
@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":WeaponCompatibility"))
 
     implementation(project(":Weapon_1_19_R3", "reobf"))
+    implementation(project(":Weapon_1_20_R1", "reobf"))
 }
 
 tasks {
@@ -56,6 +57,7 @@ tasks.named<ShadowJar>("shadowJar") {
         include(project(":WeaponCompatibility"))
 
         include(project(":Weapon_1_19_R3"))
+        include(project(":Weapon_1_20_R1"))
 
         relocate("org.bstats", "me.deecaad.weaponmechanics.lib.bstats") {
             include(dependency("org.bstats:"))

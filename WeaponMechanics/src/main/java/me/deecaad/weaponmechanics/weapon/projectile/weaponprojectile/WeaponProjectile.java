@@ -1,10 +1,10 @@
 package me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile;
 
-import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.core.utils.VectorUtil;
+import me.deecaad.core.utils.ray.RayTrace;
+import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
-import me.deecaad.core.utils.ray.RayTrace;
 import me.deecaad.weaponmechanics.weapon.weaponevents.ProjectileEndEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,23 +13,28 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class WeaponProjectile extends AProjectile {
 
-    // Storing this reference to be able to use cloneSettingsAndShoot(Location, Motion) method
-    private final ProjectileSettings projectileSettings;
+    // These may be modified by WMP. We have booleans to check if a new copy
+    // was made of these variables.
+    private ProjectileSettings projectileSettings;
+    private boolean isProjectileSettingsChanged;
+    private Sticky sticky;
+    private boolean isStickyChanged;
+    private Through through;
+    private boolean isThroughChanged;
+    private Bouncy bouncy;
+    private boolean isBouncyChanged;
 
     private final ItemStack weaponStack;
     private final String weaponTitle;
     private final EquipmentSlot hand;
-
-    private final Sticky sticky;
-    private final Through through;
-    private final Bouncy bouncy;
 
     private StickedData stickedData;
     private int throughAmount;
@@ -51,12 +56,13 @@ public class WeaponProjectile extends AProjectile {
         super(shooter, location, motion);
 
         this.projectileSettings = projectileSettings;
-        this.weaponStack = weaponStack;
-        this.weaponTitle = weaponTitle;
-        this.hand = hand;
         this.sticky = sticky;
         this.through = through;
         this.bouncy = bouncy;
+
+        this.weaponStack = weaponStack;
+        this.weaponTitle = weaponTitle;
+        this.hand = hand;
 
         if (projectileSettings.isDisableEntityCollisions()) {
             this.rayTrace = new RayTrace()
@@ -84,6 +90,103 @@ public class WeaponProjectile extends AProjectile {
      */
     public WeaponProjectile clone(Location location, Vector motion) {
         return new WeaponProjectile(projectileSettings, getShooter(), location, motion, weaponStack, weaponTitle, hand, sticky, through, bouncy);
+    }
+
+    public ProjectileSettings getProjectileSettings() {
+        if (isProjectileSettingsChanged)
+            return projectileSettings;
+
+        projectileSettings = projectileSettings.clone();
+        isProjectileSettingsChanged = true;
+        return projectileSettings;
+    }
+
+    public void setProjectileSettings(@NotNull ProjectileSettings projectileSettings) {
+        this.projectileSettings = projectileSettings;
+        isProjectileSettingsChanged = true;
+    }
+
+
+    public @Nullable Sticky getSticky() {
+        if (isStickyChanged || sticky == null)
+            return sticky;
+
+        sticky = sticky.clone();
+        isStickyChanged = true;
+        return sticky;
+    }
+
+    public void setSticky(@Nullable Sticky sticky) {
+        setSticky(sticky, true);
+    }
+
+    /**
+     * Sets the sticky properties of this projectile (whether it sticks to
+     * blocks/entities). If <code>isStickyChanged == true</code>, then no copy
+     * will be made. This means that the passed <code>sticky</code> instance
+     * must be mutable.
+     *
+     * @param sticky          The nullable sticky instance.
+     * @param isStickyChanged true if sticky is mutable.
+     */
+    public void setSticky(@Nullable Sticky sticky, boolean isStickyChanged) {
+        this.sticky = sticky;
+        this.isStickyChanged = isStickyChanged;
+    }
+
+    public @Nullable Through getThrough() {
+        if (isThroughChanged || through == null)
+            return through;
+
+        through = through.clone();
+        isThroughChanged = true;
+        return through;
+    }
+
+
+    public void setThrough(@Nullable Through through) {
+        setThrough(through, true);
+    }
+
+    /**
+     * Sets the through properties of this projectile (whether it passes through
+     * blocks/entities). If <code>isThroughChanged == true</code>, then no copy
+     * will be made. This means that the passed <code>through</code> instance
+     * must be mutable.
+     *
+     * @param through          The nullable through instance.
+     * @param isThroughChanged true if through is mutable.
+     */
+    public void setThrough(@Nullable Through through, boolean isThroughChanged) {
+        this.through = through;
+        this.isThroughChanged = isThroughChanged;
+    }
+
+    public @Nullable Bouncy getBouncy() {
+        if (isBouncyChanged || bouncy == null)
+            return bouncy;
+
+        bouncy = bouncy.clone();
+        isBouncyChanged = true;
+        return bouncy;
+    }
+
+    public void setBouncy(@Nullable Bouncy bouncy) {
+        setBouncy(bouncy, true);
+    }
+
+    /**
+     * Sets the bouncy properties of this projectile (whether it bounces on
+     * blocks/entities). If <code>isBouncyChanged == true</code>, then no copy
+     * will be made. This means that the passed <code>through</code> instance
+     * must be mutable.
+     *
+     * @param bouncy          The nullable bouncy instance.
+     * @param isBouncyChanged true if bouncy is mutable.
+     */
+    public void setBouncy(@Nullable Bouncy bouncy, boolean isBouncyChanged) {
+        this.bouncy = bouncy;
+        this.isBouncyChanged = isBouncyChanged;
     }
 
     @Override
@@ -389,19 +492,5 @@ public class WeaponProjectile extends AProjectile {
     public void onEnd() {
         super.onEnd();
         Bukkit.getPluginManager().callEvent(new ProjectileEndEvent(this));
-    }
-
-    /**
-     * @return the projectile settings of this projectile
-     */
-    public ProjectileSettings getProjectileSettings() {
-        return projectileSettings;
-    }
-
-    /**
-     * @return the ray tracer for this projectile
-     */
-    public RayTrace getRayTrace() {
-        return rayTrace;
     }
 }

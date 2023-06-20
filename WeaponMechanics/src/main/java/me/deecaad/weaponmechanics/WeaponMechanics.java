@@ -34,6 +34,7 @@ import me.deecaad.weaponmechanics.packetlisteners.OutSetSlotBobFix;
 import me.deecaad.weaponmechanics.weapon.WeaponHandler;
 import me.deecaad.weaponmechanics.weapon.damage.AssistData;
 import me.deecaad.weaponmechanics.weapon.damage.BlockDamageData;
+import me.deecaad.weaponmechanics.weapon.damage.DamageModifier;
 import me.deecaad.weaponmechanics.weapon.info.InfoHandler;
 import me.deecaad.weaponmechanics.weapon.placeholders.PlaceholderValidator;
 import me.deecaad.weaponmechanics.weapon.projectile.HitBoxValidator;
@@ -236,7 +237,7 @@ public class WeaponMechanics {
             validators.add(new PlaceholderValidator());
             validators.add(new AssistData());
 
-            FileReader basicConfigurationReader = new FileReader(debug, null, validators);
+            FileReader basicConfigurationReader = new FileReader(debug, List.of(new DamageModifier()), validators);
             Configuration filledMap = basicConfigurationReader.fillOneFile(configyml);
             basicConfiguration = basicConfigurationReader.usePathToSerializersAndValidators(filledMap);
         } else {
